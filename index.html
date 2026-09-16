@@ -4402,18 +4402,19 @@
         return doc.output('datauristring').split(',')[1]; // base64 only
     }
 
-    async function rfqApi(payload) {
-        if (RFQ_ENDPOINT.indexOf('http') !== 0) throw new Error('RFQ backend is not configured yet.');
-        const res = await fetch(RFQ_ENDPOINT, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // simple request: avoids CORS preflight, which Apps Script cannot answer
-            body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error('Network error (' + res.status + '). Please try again.');
-        const data = await res.json();
-        if (!data.ok) throw new Error(data.error || 'Request failed.');
-        return data;
-    }
+	async function rfqApi(payload) {
+		if (RFQ_ENDPOINT.indexOf('http') !== 0) throw new Error('RFQ backend is not configured yet.');
+		const res = await fetch(RFQ_ENDPOINT + '?_=' + Date.now(), {
+			method: 'POST',
+			redirect: 'follow',
+			headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // simple request: avoids CORS preflight, which Apps Script cannot answer
+			body: JSON.stringify(payload)
+		});
+		if (!res.ok) throw new Error('Network error (' + res.status + '). Please try again.');
+		const data = await res.json();
+		if (!data.ok) throw new Error(data.error || 'Request failed.');
+		return data;
+	}
 
     // --- UI wiring ---
     const rfqEls = {
