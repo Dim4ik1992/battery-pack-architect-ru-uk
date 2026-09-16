@@ -1279,13 +1279,13 @@
         <textarea id="rfq-note" rows="4" maxlength="5000" placeholder="Region, quantity needed, target price, timeline, application, enclosure / BMS requirements..."></textarea>
         <input type="text" id="rfq-website" tabindex="-1" autocomplete="off" style="position:absolute; left:-5000px; width:1px; height:1px;" aria-hidden="true">
         <div id="rfq-verify-row">
-            <button id="rfq-send-code" class="btn-action btn-add">Send verification code</button>
+            <button type="button" id="rfq-send-code" class="btn-action btn-add">Send verification code</button>
             <input type="text" id="rfq-code" maxlength="6" inputmode="numeric" placeholder="6-digit code" style="display:none; width:110px; flex:0 0 auto;">
-            <button id="rfq-verify" class="btn-action btn-add" style="display:none;">Verify</button>
+            <button type="button" id="rfq-verify" class="btn-action btn-add" style="display:none;">Verify</button>
             <span id="rfq-verified-badge" style="display:none;">&#10004; Email verified</span>
         </div>
         <div id="rfq-status"></div>
-        <button id="rfq-submit" disabled>Send RFQ</button>
+        <button type="button" id="rfq-submit" disabled>Send RFQ</button>
         <div class="rfq-smallprint">By sending, you submit your contact details, note, design JSON, 3D snapshot and generated PDF to the selected manufacturer, with a copy to Battery Pack Architect for delivery and quality tracking. The manufacturer replies directly to your email. Do not include unnecessary personal or confidential information. Verification codes expire after 10 minutes.</div>
     </div>
 </div></div>
@@ -4402,19 +4402,61 @@
         return doc.output('datauristring').split(',')[1]; // base64 only
     }
 
-	async function rfqApi(payload) {
-		if (RFQ_ENDPOINT.indexOf('http') !== 0) throw new Error('RFQ backend is not configured yet.');
-		const res = await fetch(RFQ_ENDPOINT + '?_=' + Date.now(), {
-			method: 'POST',
-			redirect: 'follow',
-			headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // simple request: avoids CORS preflight, which Apps Script cannot answer
-			body: JSON.stringify(payload)
-		});
-		if (!res.ok) throw new Error('Network error (' + res.status + '). Please try again.');
-		const data = await res.json();
-		if (!data.ok) throw new Error(data.error || 'Request failed.');
-		return data;
-	}
+    async function rfqApi(payload) {
+        if (RFQ_ENDPOINT.indexOf('http') !== 0) throw new Error('RFQ backend is not configured yet.');
+
+        return new Promise((resolve, reject) => {
+            const nonce = (window.crypto && crypto.randomUUID)
+                ? crypto.randomUUID()
+                : (Date.now().toString(36) + Math.random().toString(36).slice(2));
+            const frameName = 'bpa-rfq-' + nonce.replace(/[^a-z0-9]/gi, '');
+
+            const frame = document.createElement('iframe');
+            frame.name = frameName;
+            frame.style.display = 'none';
+            document.body.appendChild(frame);
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = RFQ_ENDPOINT;
+            form.target = frameName;
+            form.style.display = 'none';
+
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'payload';
+            input.value = JSON.stringify({ ...payload, _nonce: nonce });
+            form.appendChild(input);
+            document.body.appendChild(form);
+
+            let timer;
+            const cleanup = () => {
+                clearTimeout(timer);
+                window.removeEventListener('message', onMessage);
+                form.remove();
+                frame.remove();
+            };
+
+            const onMessage = (event) => {
+                if (event.source !== frame.contentWindow) return;
+                const msg = event.data;
+                if (!msg || msg.bpaRfq !== true || msg.nonce !== nonce) return;
+
+                cleanup();
+                const data = msg.response || {};
+                if (!data.ok) reject(new Error(data.error || 'Request failed.'));
+                else resolve(data);
+            };
+
+            window.addEventListener('message', onMessage);
+            timer = setTimeout(() => {
+                cleanup();
+                reject(new Error('RFQ service timed out. Please try again.'));
+            }, 45000);
+
+            form.submit();
+        });
+    }
 
     // --- UI wiring ---
     const rfqEls = {
@@ -4485,7 +4527,8 @@
     function rfqRenderRegion() {
         const r = RFQ_REGIONS.find(x => x.id === rfqEls.region.value);
         if (r && r.partner) {
-            rfqEls.card.innerHTML = '<div class="rfq-partner-name">' + r.partner.name + ' <span>' + r.partner.location + '</span></div><div class="rfq-partner-blurb">' + r.partner.blurb + '</div>' + (r.partner.moq ? '<div class="rfq-partner-blurb" style="margin-top:5px;"><b>Minimum order quantity: ' + r.partner.moq + ' packs.</b></div>' : '');
+            rfqEls.card.innerHTML = '<div class="rfq-partner-name">' + r.partner.name + ' <span>' + r.partner.location + '</span></div><div class="rfq-partner-blurb">' + r.partner.blurb + '</div>' +
+                (r.partner.moq ? '<div class="rfq-partner-blurb" style="margin-top:4px;"><b>Minimum order quantity: ' + r.partner.moq + ' packs.</b></div>' : '');
         } else {
             rfqEls.card.innerHTML = '<div class="rfq-partner-blurb">No partner manufacturer in this region yet. Manufacturers can apply via <b>Commercial Enquiries</b> in the menu.</div>';
         }
