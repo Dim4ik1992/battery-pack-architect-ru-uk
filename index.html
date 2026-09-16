@@ -763,7 +763,7 @@
 			<h1>
 				<span style="font-size:1.2em; margin-right:4px;">🔋</span>
 				<span class="title-text">Pack Architect</span>
-				<span class="version-span">v91</span>
+				<span class="version-span">v90.9 test</span>
 			</h1>
 			
 			<div class="header-actions">
@@ -4438,7 +4438,6 @@
             };
 
             const onMessage = (event) => {
-                if (event.source !== frame.contentWindow) return;
                 const msg = event.data;
                 if (!msg || msg.bpaRfq !== true || msg.nonce !== nonce) return;
 
@@ -4510,6 +4509,20 @@
                RFQ_EMAIL_RE.test(rfqEls.email.value.trim()) && rfqEls.phone.value.trim().length > 4 &&
                rfqEls.note.value.trim().length > 0;
     }
+    function rfqValidateRequired() {
+        const checks = [
+            { el: rfqEls.name,  label: 'Name',              ok: rfqEls.name.value.trim().length > 1 },
+            { el: rfqEls.email, label: 'Email',             ok: RFQ_EMAIL_RE.test(rfqEls.email.value.trim()) },
+            { el: rfqEls.phone, label: 'Phone number',      ok: rfqEls.phone.value.trim().length > 4 },
+            { el: rfqEls.note,  label: 'Note for Supplier', ok: rfqEls.note.value.trim().length > 0 }
+        ];
+        checks.forEach(x => x.el.classList.toggle('input-invalid', !x.ok));
+        const missing = checks.filter(x => !x.ok);
+        if (!missing.length) return true;
+        rfqStatus('Please complete: ' + missing.map(x => x.label).join(', ') + '.', 'err');
+        missing[0].el.focus();
+        return false;
+    }
     function rfqRefreshSubmit() {
         const p = rfqPartner();
         const ready = !!p && rfqFormValid() && rfqToken && rfqVerifiedEmail === rfqEls.email.value.trim().toLowerCase();
@@ -4551,15 +4564,19 @@
     document.getElementById('btn-rfq').addEventListener('click', rfqOpen);
     document.getElementById('rfq-close').addEventListener('click', () => { rfqEls.overlay.style.display = 'none'; });
     rfqEls.region.addEventListener('change', rfqRenderRegion);
-    [rfqEls.name, rfqEls.company, rfqEls.phone, rfqEls.note].forEach(el => el.addEventListener('input', rfqRefreshSubmit));
+    [rfqEls.name, rfqEls.company, rfqEls.phone, rfqEls.note].forEach(el => el.addEventListener('input', () => {
+        el.classList.remove('input-invalid');
+        rfqRefreshSubmit();
+    }));
     rfqEls.email.addEventListener('input', () => {
+        rfqEls.email.classList.remove('input-invalid');
         if (rfqVerifiedEmail && rfqEls.email.value.trim().toLowerCase() !== rfqVerifiedEmail) rfqResetVerification();
         rfqRefreshSubmit();
     });
 
     rfqEls.sendCode.addEventListener('click', async () => {
+        if (!rfqValidateRequired()) return;
         const email = rfqEls.email.value.trim();
-        if (!RFQ_EMAIL_RE.test(email)) { rfqStatus('Enter a valid email address first.', 'err'); return; }
         if (rfqEls.hp.value) { rfqStatus('Verification code sent. Check your inbox.', 'ok'); return; } // honeypot: pretend for bots
         rfqEls.sendCode.disabled = true;
         rfqStatus('Sending verification code...');
@@ -4598,7 +4615,12 @@
 
     rfqEls.submit.addEventListener('click', async () => {
         const partner = rfqPartner();
-        if (!partner || !rfqFormValid() || !rfqToken) return;
+        if (!partner) { rfqStatus('Select an available manufacturing region.', 'err'); return; }
+        if (!rfqValidateRequired()) return;
+        if (!rfqToken || rfqVerifiedEmail !== rfqEls.email.value.trim().toLowerCase()) {
+            rfqStatus('Verify your email address before sending the RFQ.', 'err');
+            return;
+        }
         rfqBusy = true; rfqRefreshSubmit();
         const form = { name: rfqEls.name.value.trim(), company: rfqEls.company.value.trim() || 'Individual', email: rfqEls.email.value.trim(), phone: rfqSelectedCc + ' ' + rfqEls.phone.value.trim(), note: rfqEls.note.value.trim() };
         try {
