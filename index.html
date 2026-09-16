@@ -763,7 +763,7 @@
 			<h1>
 				<span style="font-size:1.2em; margin-right:4px;">🔋</span>
 				<span class="title-text">Pack Architect</span>
-				<span class="version-span">v90</span>
+				<span class="version-span">v91</span>
 			</h1>
 			
 			<div class="header-actions">
@@ -4187,7 +4187,7 @@
        ============================================================ */
     const RFQ_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzKCIamEvNTLMj3qOI164mH1vGx9sx6b94FuLFrI_O8UhF8jVpselJJbzPQkhJEpinvPQ/exec';
     const RFQ_REGIONS = [
-        { id: 'north-america', label: 'North America', partner: { id: 'tapren', name: 'TapRen Tech Solutions', location: 'USA', blurb: 'Custom battery pack design and assembly for OEMs across the USA.' } },
+        { id: 'north-america', label: 'North America', partner: { id: 'tapren', name: 'TapRen Tech Solutions', location: 'USA', blurb: 'Custom battery pack design and assembly for OEMs across the USA.', moq: 10 } },
         { id: 'europe', label: 'Europe (coming soon)', partner: null },
         { id: 'asia-pacific', label: 'Asia-Pacific (coming soon)', partner: null }
     ];
@@ -4484,7 +4484,7 @@
     function rfqRenderRegion() {
         const r = RFQ_REGIONS.find(x => x.id === rfqEls.region.value);
         if (r && r.partner) {
-            rfqEls.card.innerHTML = '<div class="rfq-partner-name">' + r.partner.name + ' <span>' + r.partner.location + '</span></div><div class="rfq-partner-blurb">' + r.partner.blurb + '</div>';
+            rfqEls.card.innerHTML = '<div class="rfq-partner-name">' + r.partner.name + ' <span>' + r.partner.location + '</span></div><div class="rfq-partner-blurb">' + r.partner.blurb + '</div>' + (r.partner.moq ? '<div class="rfq-partner-blurb" style="margin-top:5px;"><b>Minimum order quantity: ' + r.partner.moq + ' packs.</b></div>' : '');
         } else {
             rfqEls.card.innerHTML = '<div class="rfq-partner-blurb">No partner manufacturer in this region yet. Manufacturers can apply via <b>Commercial Enquiries</b> in the menu.</div>';
         }
