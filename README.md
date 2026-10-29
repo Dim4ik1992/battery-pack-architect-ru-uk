@@ -9,6 +9,7 @@
 **[🚀 Launch Live Tool](https://dim4ik1992.github.io/battery-pack-architect-ru-uk/)**
 
 This copy adds a language selector for English, Russian, and Ukrainian. The selected language is saved in the browser.
+It also includes a dark theme, UAH (₴) pricing, and an editable battery assembly cost calculator for labor and materials.
 
 ---
 

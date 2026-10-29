@@ -16,7 +16,7 @@
     <meta property="og:url" content="https://dim4ik1992.github.io/battery-pack-architect-ru-uk/">
     <meta property="og:title" content="Battery Pack Architect - 3D Design & Configurator">
     <meta property="og:description" content="Design and visualize custom battery packs with real-time electrical and physical stat updates.">
-    <meta property="og:image" content="https://dim4ik1992.github.io/battery-pack-architect-ru-uk/Preview.jpg"> 
+    <meta property="og:image" content="https://dim4ik1992.github.io/battery-pack-architect-ru-uk/Preview.jpg">
     
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:title" content="Battery Pack Architect">
@@ -753,6 +753,32 @@
         }
     </script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
+<style>
+    body.dark-theme { background:#111827;color:#dbe3ef; }
+    body.dark-theme #sidebar { background:#1f2937;border-right-color:#374151;box-shadow:4px 0 20px rgba(0,0,0,.25); }
+    body.dark-theme #render-area { background:#111827; }
+    body.dark-theme .header,
+    body.dark-theme .group-box,
+    body.dark-theme #stats-panel,
+    body.dark-theme #snapshot-area,
+    body.dark-theme .modal-header,
+    body.dark-theme #assembly-box,
+    body.dark-theme #assembly-box .modal-body { background:#1f2937;color:#e5e7eb;border-color:#374151; }
+    body.dark-theme .group-box,
+    body.dark-theme input,
+    body.dark-theme select,
+    body.dark-theme textarea,
+    body.dark-theme #currency-btn,
+    body.dark-theme #currency-panel,
+    body.dark-theme details { background-color:#111827;color:#e5e7eb;border-color:#4b5563; }
+    body.dark-theme h1,body.dark-theme h3,body.dark-theme .title-text,body.dark-theme label,body.dark-theme .section-title { color:#e5e7eb !important; }
+    body.dark-theme .stat-header,body.dark-theme .res-lbl,body.dark-theme .sim-model-note { color:#cbd5e1 !important; }
+    body.dark-theme #assembly-table,body.dark-theme .comp-table { background:#111827;color:#e5e7eb; }
+    body.dark-theme #assembly-table th,body.dark-theme #assembly-table td,body.dark-theme .comp-table th,body.dark-theme .comp-table td { border-color:#374151; }
+    body.dark-theme .btn-header,body.dark-theme .btn-action,body.dark-theme .btn-hamburger { background:#374151;color:#f8fafc;border-color:#64748b; }
+    body.dark-theme .dropdown-content { background:#1f2937;border-color:#374151; }
+    body.dark-theme .dropdown-content a { color:#e5e7eb;border-bottom-color:#374151; }
+</style>
 </head>
 <body>
 
@@ -773,6 +799,7 @@
 					<option value="ru">RU</option>
 					<option value="uk">UA</option>
 				</select>
+				<button id="theme-toggle" class="btn-header" type="button" title="Switch theme" aria-label="Switch theme">🌙</button>
 				<div class="dropdown">
 					<button id="btn-file-menu" class="btn-hamburger">☰</button>
 					<div id="file-menu" class="dropdown-content">
@@ -1156,6 +1183,7 @@
             <button id="btn-compare" class="btn-action btn-comp">Compare All (<span id="snap-count">0</span>)</button>
         </div>
         <button id="btn-rfq" class="btn-action">🏭 Get a Manufacturing Quote</button>
+        <button id="btn-assembly-cost" class="btn-action" style="width:100%; margin-top:4px;">🧰 Battery Assembly Cost</button>
 		<div id="snap-list"></div>
     </div>
 	
@@ -1198,6 +1226,34 @@
     <div id="fatal-error" role="alert"><strong>Battery Pack Architect could not start.</strong><br>The 3D libraries may have been blocked or WebGL may be unavailable. Check your connection, content blockers and browser WebGL support, then reload the page.</div>
 </div>
 
+<div id="assembly-overlay" class="modal-base-overlay">
+    <div id="assembly-box" style="background:#fff;width:95%;max-width:980px;max-height:90vh;border-radius:8px;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.5);">
+        <div class="modal-header"><h3 id="assembly-title" style="margin:0;color:#1e293b;">Battery Assembly Cost</h3><button id="assembly-close" type="button" style="border:none;background:none;font-size:1.5rem;cursor:pointer;color:#64748b;">&times;</button></div>
+        <div class="modal-body" style="overflow:auto;">
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px;">
+                <label id="assembly-s-label"><span>Series (S)</span><input type="number" id="assembly-s" min="1" value="20"></label>
+                <label id="assembly-p-label"><span>Parallel (P)</span><input type="number" id="assembly-p" min="1" value="8"></label>
+                <label id="assembly-total-label"><span>Total cells</span><input type="number" id="assembly-total" value="160" readonly></label>
+            </div>
+            <div style="overflow-x:auto;">
+                <table id="assembly-table" class="comp-table" style="min-width:760px;">
+                    <thead><tr><th>Type</th><th>Operation / Material</th><th>Unit price, ₴</th><th>Quantity</th><th>Total, ₴</th><th>Note</th></tr></thead>
+                    <tbody id="assembly-labor-body"></tbody>
+                    <tbody id="assembly-material-body"></tbody>
+                </table>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px;">
+                <div><strong id="assembly-labor-label">Labor total</strong><div id="assembly-labor-total" style="font-size:1.1rem;color:#2563eb;font-weight:800;">0 ₴</div></div>
+                <div><strong id="assembly-material-label">Materials total</strong><div id="assembly-material-total" style="font-size:1.1rem;color:#0891b2;font-weight:800;">0 ₴</div></div>
+                <div><strong id="assembly-grand-label">Grand total</strong><div id="assembly-grand-total" style="font-size:1.2rem;color:#16a34a;font-weight:900;">0 ₴</div></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+                <button id="assembly-reset" type="button" class="btn-action">Reset prices</button>
+                <button id="assembly-save" type="button" class="btn-action btn-add">Save calculation</button>
+            </div>
+        </div>
+    </div>
+</div>
 <div id="modal-overlay" class="modal-base-overlay"><div id="comp-modal"><div class="modal-header"><h3 style="margin:0; color:#1e293b;">Comparison Matrix</h3><button onclick="document.getElementById('modal-overlay').style.display='none'" style="border:none; background:none; font-size:1.5rem; cursor:pointer; color:#64748b;">&times;</button></div><div class="modal-body"><table class="comp-table"><thead><tr id="comp-head-row"><th>Parameter</th></tr></thead><tbody id="comp-body"></tbody></table></div></div></div>
 <div id="license-overlay" class="modal-base-overlay" style="z-index: 9998;"><div id="license-box" style="background:#fff; width:90%; max-width:800px; max-height:85vh; border-radius:8px; display:flex; flex-direction:column; padding:0; box-shadow: 0 20px 50px rgba(0,0,0,0.5);"><div class="modal-header"><h3 style="margin:0;">GNU General Public License v3.0</h3><button onclick="document.getElementById('license-overlay').style.display='none'" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">&times;</button></div><div style="padding:20px; overflow-y:auto; font-family:monospace; font-size:0.75rem; white-space:pre-wrap; background:#f8fafc; color:#333;" data-loaded="false">Loading License text... (If this takes too long, view it here: https://www.gnu.org/licenses/gpl-3.0.txt)</div></div></div>
 <div id="disclaimer-overlay" class="modal-base-overlay"><div id="disclaimer-box"><div class="disc-header"><span style="font-size:1.5rem">⚠️</span><span>IMPORTANT SAFETY & LEGAL DISCLAIMER</span></div><div class="disc-content">
@@ -1657,7 +1713,8 @@
         // Approximate annual-average conversion rates, expressed as selected currency per 1 EUR.
         // Update these once per year. Pricing is still indicative only, not a live quote.
         { code:'EUR', flag:'eu', symbol:'€',   mode:'base',      rate:1,       decimals:2, label:'Euro' },
-		{ code:'USD', flag:'us', symbol:'$',   mode:'converted', rate:1.08,    decimals:2, label:'US Dollar' },
+        { code:'UAH', flag:'ua', symbol:'₴',   mode:'converted', rate:46.5,    decimals:2, label:'Ukrainian Hryvnia' },
+        { code:'USD', flag:'us', symbol:'$',   mode:'converted', rate:1.08,    decimals:2, label:'US Dollar' },
 		{ code:'GBP', flag:'gb', symbol:'£',   mode:'converted', rate:0.86,    decimals:2, label:'British Pound' },
 		{ code:'JPY', flag:'jp', symbol:'¥',   mode:'converted', rate:169.07,  decimals:2, label:'Japanese Yen' },
 		{ code:'AUD', flag:'au', symbol:'A$',  mode:'converted', rate:1.75,    decimals:2, label:'Australian Dollar' },
@@ -1691,17 +1748,19 @@
     const COUNTRY_TO_CURRENCY = {
         AT:'EUR', BE:'EUR', CY:'EUR', DE:'EUR', EE:'EUR', ES:'EUR', FI:'EUR', FR:'EUR',
         GR:'EUR', HR:'EUR', IE:'EUR', IT:'EUR', LT:'EUR', LU:'EUR', LV:'EUR', MT:'EUR',
-        NL:'EUR', PT:'EUR', SI:'EUR', SK:'EUR',
+        NL:'EUR', PT:'EUR', SI:'EUR', SK:'EUR', UA:'UAH',
 
         US:'USD', PR:'USD', GU:'USD',
         GB:'GBP', GG:'GBP', JE:'GBP', IM:'GBP',
         JP:'JPY', AU:'AUD', CA:'CAD', CH:'CHF', LI:'CHF', CN:'CNY', KR:'KRW', IN:'INR',
         PL:'PLN', SE:'SEK', NO:'NOK', DK:'DKK', CZ:'CZK', HU:'HUF', RO:'RON', BG:'BGN',
-        TR:'TRY', BR:'BRL', MX:'MXN', SG:'SGD', NZ:'NZD', ZA:'ZAR', IL:'ILS',
+        TR:'TRY', BR:'BRL', MX:'MXN', SG:'SGD', NZ:'NZD', ZA:'ZAR', IL:'ILS', UA:'UAH',
         MY:'MYR', TH:'THB', PH:'PHP', ID:'IDR', HK:'HKD'
     };
 
     const TIMEZONE_TO_CURRENCY = {
+        'Europe/Kyiv': 'UAH',
+        'Europe/Kiev': 'UAH',
         'Europe/Malta': 'EUR',
         'Europe/Rome': 'EUR',
         'Europe/Paris': 'EUR',
@@ -4678,6 +4737,16 @@
 (function () {
     const translations = {
         ru: {
+            "Battery Assembly Cost":"Расчёт сборки аккумулятора","Series (S)":"Последовательность (S)","Parallel (P)":"Параллельно (P)","Total cells":"Всего ячеек",
+            "Search Cell Database":"Поиск в базе ячеек","Type to search (e.g. '26J', 'Molicel', '5000mAh')...":"Введите запрос (например: «26J», «Molicel», «5000mAh»)...",
+            "Estimated cell cost":"Ориентировочная стоимость ячейки","Select currency":"Выбрать валюту",
+            "Max Discharge":"Максимальный разряд","Max Charge":"Максимальный заряд","Total Series (S)":"Последовательных ячеек (S)",
+            "Advanced Strip Parameters":"Дополнительные параметры полосок","Current SoC":"Начальный уровень заряда",
+            "0% of max current":"0% от максимального тока","% of max current":"% от максимального тока","Load type":"Тип нагрузки",
+            "Voltage Sag":"Просадка напряжения","Usable Capacity":"Используемая ёмкость","Heat":"Нагрев","Waste":"Потери",
+            "Type":"Тип","Operation / Material":"Работа / Материал","Unit price, ₴":"Цена за единицу, ₴","Quantity":"Количество","Total, ₴":"Итого, ₴","Note":"Примечание",
+            "Labor":"Работа","Material":"Материал","Labor total":"Итого за работу","Materials total":"Итого за материалы","Grand total":"Общий итог",
+            "Reset prices":"Сбросить цены","Save calculation":"Сохранить расчёт","Save":"Сохранить",
             "Reset":"Сброс","Import Settings":"Импорт настроек","Export Settings":"Экспорт настроек",
             "Export 3D Model (STL)":"Экспорт 3D-модели (STL)","Send Feedback":"Отправить отзыв",
             "Commercial Enquiries":"Коммерческие запросы","Request Manufacturing Quote":"Запросить цену производства",
@@ -4744,6 +4813,16 @@
             "I Understand and Agree":"Я понимаю и принимаю","Language":"Язык"
         },
         uk: {
+            "Battery Assembly Cost":"Розрахунок зборки акумулятора","Series (S)":"Послідовність (S)","Parallel (P)":"Паралельно (P)","Total cells":"Усього елементів",
+            "Search Cell Database":"Пошук у базі елементів","Type to search (e.g. '26J', 'Molicel', '5000mAh')...":"Введіть запит (наприклад: «26J», «Molicel», «5000mAh»)...",
+            "Estimated cell cost":"Орієнтовна вартість елемента","Select currency":"Вибрати валюту",
+            "Max Discharge":"Максимальний розряд","Max Charge":"Максимальний заряд","Total Series (S)":"Послідовних елементів (S)",
+            "Advanced Strip Parameters":"Додаткові параметри смужок","Current SoC":"Початковий рівень заряду",
+            "0% of max current":"0% від максимального струму","% of max current":"% від максимального струму","Load type":"Тип навантаження",
+            "Voltage Sag":"Спад напруги","Usable Capacity":"Використана ємність","Heat":"Нагрів","Waste":"Втрати",
+            "Type":"Тип","Operation / Material":"Робота / Матеріал","Unit price, ₴":"Ціна за одиницю, ₴","Quantity":"Кількість","Total, ₴":"Разом, ₴","Note":"Примітка",
+            "Labor":"Робота","Material":"Матеріал","Labor total":"Разом за роботу","Materials total":"Разом за матеріали","Grand total":"Загальний підсумок",
+            "Reset prices":"Скинути ціни","Save calculation":"Зберегти розрахунок","Save":"Зберегти",
             "Reset":"Скинути","Import Settings":"Імпорт налаштувань","Export Settings":"Експорт налаштувань",
             "Export 3D Model (STL)":"Експорт 3D-моделі (STL)","Send Feedback":"Надіслати відгук",
             "Commercial Enquiries":"Комерційні запити","Request Manufacturing Quote":"Запросити ціну виробництва",
@@ -4883,6 +4962,213 @@
         observer.observe(document.body, {childList:true, characterData:true, subtree:true});
     });
     observer.observe(document.body, {childList:true, characterData:true, subtree:true});
+})();
+</script>
+<script>
+(function () {
+    const STORAGE_KEY = 'bpa_assembly_cost_v1';
+    const laborDefaults = [
+        ['labor','Cell test (IR/capacity)',15,0,'For warranty'],
+        ['labor','Positive terminal isolation rings',5,0,'Short circuit protection'],
+        ['labor','Cell holder installation',5,160,'Rigid frame'],
+        ['labor','Glue / reinforced tape assembly',7,0,'More labor intensive'],
+        ['labor','Spot welding, one contact',15,160,'Nickel strip'],
+        ['labor','BMS installation and soldering, up to 10S',400,0,'Basic complexity'],
+        ['labor','BMS installation and soldering, 13S-20S',600,1,'Higher complexity'],
+        ['labor','Power connector soldering',100,1,'XT60 / XT90 / Anderson, heat shrink included'],
+        ['labor','Temperature sensor / active balancer installation',150,0,'Extra protection and balancing'],
+        ['labor','Insulation and enclosure work',200,0,'Kapton, fiberglass, tape'],
+        ['labor','Heat-shrink tubing installation',150,0,'Final appearance'],
+        ['labor','Joint sealing / moisture protection',250,0,'For electric transport']
+    ];
+    const materialDefaults = [
+        ['material','18650 cells / installed from pack',200,160,'Lithium-ion format 18x65 mm'],
+        ['material','21700 cells / installed from pack',280,0,'Lithium-ion format 21x70 mm'],
+        ['material','Cell holders',40,160,'Depends on holder size and layout'],
+        ['material','Nickel strip roll',150,1,'Usually 0.15 x 8 mm'],
+        ['material','BMS board',1500,1,'Current and cell-count dependent'],
+        ['material','XT30 connector',30,0,'Up to 30 A'],
+        ['material','XT60 connector',30,1,'Up to 60 A'],
+        ['material','XT90 connector',70,0,'High-power connector'],
+        ['material','AWG 12 silicone wire, m',80,1,'Power output wire'],
+        ['material','AWG 14 silicone wire, m',60,1,'Charging or auxiliary wire'],
+        ['material','Insulating cardboard, sheet',40,1,'Electrical isolation'],
+        ['material','Fiberglass board, sheet',140,1,'FR4 support and protection'],
+        ['material','Heat-shrink tubing, m',150,1,'Pack enclosure'],
+        ['material','Charging connector',30,1,'Connector type depends on charger'],
+        ['material','Positive insulation rings, pcs',10,160,'Required for short-circuit protection'],
+        ['material','Kapton tape, roll',100,1,'Thermal resistance and insulation'],
+        ['material','Reinforced tape, roll',150,1,'Rigid pack fixation'],
+        ['material','Balance wire, m',45,1,'BMS wiring'],
+        ['material','Neutral silicone sealant, tube',200,0,'For bonding and sealing'],
+        ['material','Solder and flux',150,0,'For wire and board soldering']
+    ];
+
+    let rows = laborDefaults.concat(materialDefaults).map((r, i) => ({id:i,type:r[0],name:r[1],price:r[2],qty:r[3],note:r[4]}));
+    try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (Array.isArray(saved) && saved.length) {
+            rows = saved.map((r, i) => ({...rows[i], ...r}));
+        }
+    } catch (_) {}
+
+    const overlay = document.getElementById('assembly-overlay');
+    const laborBody = document.getElementById('assembly-labor-body');
+    const materialBody = document.getElementById('assembly-material-body');
+    const sInput = document.getElementById('assembly-s');
+    const pInput = document.getElementById('assembly-p');
+    const totalInput = document.getElementById('assembly-total');
+
+    function n(v) {
+        const x = Number(String(v).replace(',', '.'));
+        return Number.isFinite(x) ? x : 0;
+    }
+    function formatUAH(v) {
+        return `${new Intl.NumberFormat(document.documentElement.lang === 'en' ? 'en-US' : document.documentElement.lang === 'uk' ? 'uk-UA' : 'ru-RU', {maximumFractionDigits:2}).format(n(v))} ₴`;
+    }
+    const assemblyRu = {
+        "Cell test (IR/capacity)":"Тест ячейки (сопротивление/ёмкость)","Positive terminal isolation rings":"Изоляторы на плюс",
+        "Cell holder installation":"Установка в держатели","Glue / reinforced tape assembly":"Сборка на клее / армированном скотче",
+        "Spot welding, one contact":"Точечная сварка, один контакт","BMS installation and soldering, up to 10S":"Монтаж и пайка BMS до 10S",
+        "BMS installation and soldering, 13S-20S":"Монтаж и пайка BMS 13S-20S","Power connector soldering":"Пайка силового разъема",
+        "Temperature sensor / active balancer installation":"Установка датчика температуры / активного балансировщика",
+        "Insulation and enclosure work":"Изоляция и корпусные работы","Heat-shrink tubing installation":"Установка термоусадки",
+        "Joint sealing / moisture protection":"Герметизация швов / защита от влаги","18650 cells / installed from pack":"Ячейки 18650",
+        "21700 cells / installed from pack":"Ячейки 21700","Cell holders":"Держатели ячеек","Nickel strip roll":"Никелевая лента",
+        "BMS board":"Плата BMS","XT30 connector":"Разъём XT30","XT60 connector":"Разъём XT60","XT90 connector":"Разъём XT90",
+        "AWG 12 silicone wire, m":"Силиконовый провод AWG 12, м","AWG 14 silicone wire, m":"Силиконовый провод AWG 14, м",
+        "Insulating cardboard, sheet":"Изоляционный картон, лист","Fiberglass board, sheet":"Текстолит, лист",
+        "Heat-shrink tubing, m":"Термоусадка, м","Charging connector":"Разъём зарядки","Positive insulation rings, pcs":"Изоляционные кольца на плюс, шт.",
+        "Kapton tape, roll":"Каптоновый скотч, рулон","Reinforced tape, roll":"Армированный скотч, рулон",
+        "Balance wire, m":"Балансировочный провод, м","Neutral silicone sealant, tube":"Нейтральный силиконовый герметик, тюбик",
+        "Solder and flux":"Припой и активный флюс","For warranty":"Для гарантии","Short circuit protection":"Защита от короткого замыкания",
+        "Rigid frame":"Жёсткий каркас","More labor intensive":"Более трудозатратная операция","Nickel strip":"Никелевая лента"
+    };
+    const assemblyUk = {
+        "Cell test (IR/capacity)":"Тест елемента (опір/ємність)","Positive terminal isolation rings":"Ізолятори на плюс",
+        "Cell holder installation":"Установка в тримачі","Glue / reinforced tape assembly":"Збірка на клею / армованому скотчі",
+        "Spot welding, one contact":"Точкове зварювання, один контакт","BMS installation and soldering, up to 10S":"Монтаж і пайка BMS до 10S",
+        "BMS installation and soldering, 13S-20S":"Монтаж і пайка BMS 13S-20S","Power connector soldering":"Пайка силового роз'єму",
+        "Temperature sensor / active balancer installation":"Установка датчика температури / активного балансувальника",
+        "Insulation and enclosure work":"Ізоляція та корпусні роботи","Heat-shrink tubing installation":"Установка термоусадки",
+        "Joint sealing / moisture protection":"Герметизація швів / захист від вологи","18650 cells / installed from pack":"Елементи 18650",
+        "21700 cells / installed from pack":"Елементи 21700","Cell holders":"Тримачі елементів","Nickel strip roll":"Нікелева стрічка",
+        "BMS board":"Плата BMS","XT30 connector":"Роз'єм XT30","XT60 connector":"Роз'єм XT60","XT90 connector":"Роз'єм XT90",
+        "AWG 12 silicone wire, m":"Силіконовий провід AWG 12, м","AWG 14 silicone wire, m":"Силіконовий провід AWG 14, м",
+        "Insulating cardboard, sheet":"Ізоляційний картон, лист","Fiberglass board, sheet":"Склотекстоліт, лист",
+        "Heat-shrink tubing, m":"Термоусадка, м","Charging connector":"Роз'єм зарядки","Positive insulation rings, pcs":"Ізоляційні кільця на плюс, шт.",
+        "Kapton tape, roll":"Каптонова стрічка, рулон","Reinforced tape, roll":"Армований скотч, рулон",
+        "Balance wire, m":"Балансувальний провід, м","Neutral silicone sealant, tube":"Нейтральний силіконовий герметик, тюбик",
+        "Solder and flux":"Припій та активний флюс","For warranty":"Для гарантії","Short circuit protection":"Захист від короткого замикання",
+        "Rigid frame":"Жорсткий каркас","More labor intensive":"Більше трудомістка операція","Nickel strip":"Нікелева стрічка"
+    };
+    function assemblyText(text) {
+        const lang = document.documentElement.lang;
+        return lang === 'ru' ? (assemblyRu[text] || text) : lang === 'uk' ? (assemblyUk[text] || text) : text;
+    }
+    function syncPackCounts() {
+        const s = n(document.getElementById('s-count')?.value) || n(sInput.value);
+        const p = n(document.getElementById('p-count')?.value) || n(pInput.value);
+        sInput.value = s;
+        pInput.value = p;
+        totalInput.value = s * p;
+        const holders = rows.find(r => r.name === 'Cell holders');
+        const contacts = rows.find(r => r.name === 'Spot welding, one contact');
+        const rings = rows.find(r => r.name === 'Positive insulation rings, pcs');
+        const cells = rows.find(r => r.name === '18650 cells / installed from pack');
+        if (holders) holders.qty = s * p;
+        if (contacts) contacts.qty = s * p;
+        if (rings) rings.qty = s * p;
+        if (cells) cells.qty = s * p;
+        renderRows();
+    }
+    function renderRows() {
+        laborBody.replaceChildren();
+        materialBody.replaceChildren();
+        let laborTotal = 0;
+        let materialTotal = 0;
+        rows.forEach((row) => {
+            const tr = document.createElement('tr');
+            const type = document.createElement('td');
+            type.textContent = row.type === 'labor' ? (document.documentElement.lang === 'uk' ? 'Робота' : document.documentElement.lang === 'ru' ? 'Работа' : 'Labor') : (document.documentElement.lang === 'uk' ? 'Матеріал' : document.documentElement.lang === 'ru' ? 'Материал' : 'Material');
+            const name = document.createElement('td'); name.textContent = assemblyText(row.name);
+            const price = document.createElement('td');
+            const priceInput = document.createElement('input'); priceInput.type = 'number'; priceInput.min = '0'; priceInput.step = '1'; priceInput.value = row.price; priceInput.style.width = '95px';
+            price.appendChild(priceInput);
+            const qty = document.createElement('td');
+            const qtyInput = document.createElement('input'); qtyInput.type = 'number'; qtyInput.min = '0'; qtyInput.step = '1'; qtyInput.value = row.qty; qtyInput.style.width = '85px';
+            qty.appendChild(qtyInput);
+            const total = document.createElement('td'); total.style.fontWeight = '800';
+            const note = document.createElement('td'); note.textContent = assemblyText(row.note); note.style.color = '#64748b';
+            tr.append(type,name,price,qty,total,note);
+
+            function recalc() {
+                row.price = n(priceInput.value);
+                row.qty = n(qtyInput.value);
+                const amount = row.price * row.qty;
+                total.textContent = formatUAH(amount);
+                let lt = 0, mt = 0;
+                rows.forEach(r => {
+                    const sum = n(r.price) * n(r.qty);
+                    if (r.type === 'labor') lt += sum; else mt += sum;
+                });
+                laborTotal = lt; materialTotal = mt;
+                document.getElementById('assembly-labor-total').textContent = formatUAH(laborTotal);
+                document.getElementById('assembly-material-total').textContent = formatUAH(materialTotal);
+                document.getElementById('assembly-grand-total').textContent = formatUAH(laborTotal + materialTotal);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+            }
+            priceInput.addEventListener('input', recalc);
+            qtyInput.addEventListener('input', recalc);
+            if (row.type === 'labor') laborBody.appendChild(tr); else materialBody.appendChild(tr);
+            recalc();
+        });
+    }
+
+    document.getElementById('btn-assembly-cost').addEventListener('click', () => {
+        syncPackCounts();
+        overlay.style.display = 'flex';
+    });
+    document.getElementById('assembly-close').addEventListener('click', () => overlay.style.display = 'none');
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.style.display = 'none'; });
+    [sInput,pInput].forEach(el => el.addEventListener('input', () => {
+        const count = n(sInput.value) * n(pInput.value);
+        totalInput.value = count;
+        rows.forEach(r => {
+            if (['Cell holders','Spot welding, one contact','Positive insulation rings, pcs','18650 cells / installed from pack'].includes(r.name)) r.qty = count;
+        });
+        renderRows();
+    }));
+    document.getElementById('assembly-reset').addEventListener('click', () => {
+        localStorage.removeItem(STORAGE_KEY);
+        rows = laborDefaults.concat(materialDefaults).map((r,i) => ({id:i,type:r[0],name:r[1],price:r[2],qty:r[3],note:r[4]}));
+        syncPackCounts();
+    });
+    document.getElementById('assembly-save').addEventListener('click', () => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+        const lang = document.documentElement.lang;
+        const text = lang === 'uk' ? 'Розрахунок збережено' : lang === 'ru' ? 'Расчёт сохранён' : 'Calculation saved';
+        const btn = document.getElementById('assembly-save');
+        btn.textContent = text;
+        setTimeout(() => { btn.textContent = lang === 'uk' ? 'Зберегти розрахунок' : lang === 'ru' ? 'Сохранить расчёт' : 'Save calculation'; }, 1800);
+    });
+    syncPackCounts();
+})();
+</script>
+<script>
+(function () {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (!themeToggle) return;
+    function applyTheme(theme) {
+        const dark = theme === 'dark';
+        document.body.classList.toggle('dark-theme', dark);
+        themeToggle.textContent = dark ? '☀️' : '🌙';
+        themeToggle.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+        themeToggle.title = dark ? 'Light theme' : 'Dark theme';
+        localStorage.setItem('bpa_theme', theme);
+    }
+    themeToggle.addEventListener('click', () => applyTheme(document.body.classList.contains('dark-theme') ? 'light' : 'dark'));
+    applyTheme(localStorage.getItem('bpa_theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
 })();
 </script>
 </body>
