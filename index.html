@@ -1231,10 +1231,11 @@
         <div class="modal-header"><h3 id="assembly-title" style="margin:0;color:#1e293b;">Battery Assembly Cost</h3><button id="assembly-close" type="button" style="border:none;background:none;font-size:1.5rem;cursor:pointer;color:#64748b;">&times;</button></div>
         <div class="modal-body" style="overflow:auto;">
             <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px;">
-                <label id="assembly-s-label"><span>Series (S)</span><input type="number" id="assembly-s" min="1" value="20"></label>
-                <label id="assembly-p-label"><span>Parallel (P)</span><input type="number" id="assembly-p" min="1" value="8"></label>
+                <label id="assembly-s-label"><span>Series (S)</span><input type="number" id="assembly-s" min="1" value="20" readonly></label>
+                <label id="assembly-p-label"><span>Parallel (P)</span><input type="number" id="assembly-p" min="1" value="8" readonly></label>
                 <label id="assembly-total-label"><span>Total cells</span><input type="number" id="assembly-total" value="160" readonly></label>
             </div>
+            <div id="assembly-factors" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;margin-bottom:10px;font-size:.72rem;color:#475569;"></div>
             <div style="overflow-x:auto;">
                 <table id="assembly-table" class="comp-table" style="min-width:760px;">
                     <thead><tr><th>Type</th><th>Operation / Material</th><th>Unit price, ₴</th><th>Quantity</th><th>Total, ₴</th><th>Note</th></tr></thead>
@@ -4967,50 +4968,8 @@
 <script>
 (function () {
     const STORAGE_KEY = 'bpa_assembly_cost_v1';
-    const laborDefaults = [
-        ['labor','Cell test (IR/capacity)',15,0,'For warranty'],
-        ['labor','Positive terminal isolation rings',5,0,'Short circuit protection'],
-        ['labor','Cell holder installation',5,160,'Rigid frame'],
-        ['labor','Glue / reinforced tape assembly',7,0,'More labor intensive'],
-        ['labor','Spot welding, one contact',15,160,'Nickel strip'],
-        ['labor','BMS installation and soldering, up to 10S',400,0,'Basic complexity'],
-        ['labor','BMS installation and soldering, 13S-20S',600,1,'Higher complexity'],
-        ['labor','Power connector soldering',100,1,'XT60 / XT90 / Anderson, heat shrink included'],
-        ['labor','Temperature sensor / active balancer installation',150,0,'Extra protection and balancing'],
-        ['labor','Insulation and enclosure work',200,0,'Kapton, fiberglass, tape'],
-        ['labor','Heat-shrink tubing installation',150,0,'Final appearance'],
-        ['labor','Joint sealing / moisture protection',250,0,'For electric transport']
-    ];
-    const materialDefaults = [
-        ['material','18650 cells / installed from pack',200,160,'Lithium-ion format 18x65 mm'],
-        ['material','21700 cells / installed from pack',280,0,'Lithium-ion format 21x70 mm'],
-        ['material','Cell holders',40,160,'Depends on holder size and layout'],
-        ['material','Nickel strip roll',150,1,'Usually 0.15 x 8 mm'],
-        ['material','BMS board',1500,1,'Current and cell-count dependent'],
-        ['material','XT30 connector',30,0,'Up to 30 A'],
-        ['material','XT60 connector',30,1,'Up to 60 A'],
-        ['material','XT90 connector',70,0,'High-power connector'],
-        ['material','AWG 12 silicone wire, m',80,1,'Power output wire'],
-        ['material','AWG 14 silicone wire, m',60,1,'Charging or auxiliary wire'],
-        ['material','Insulating cardboard, sheet',40,1,'Electrical isolation'],
-        ['material','Fiberglass board, sheet',140,1,'FR4 support and protection'],
-        ['material','Heat-shrink tubing, m',150,1,'Pack enclosure'],
-        ['material','Charging connector',30,1,'Connector type depends on charger'],
-        ['material','Positive insulation rings, pcs',10,160,'Required for short-circuit protection'],
-        ['material','Kapton tape, roll',100,1,'Thermal resistance and insulation'],
-        ['material','Reinforced tape, roll',150,1,'Rigid pack fixation'],
-        ['material','Balance wire, m',45,1,'BMS wiring'],
-        ['material','Neutral silicone sealant, tube',200,0,'For bonding and sealing'],
-        ['material','Solder and flux',150,0,'For wire and board soldering']
-    ];
-
-    let rows = laborDefaults.concat(materialDefaults).map((r, i) => ({id:i,type:r[0],name:r[1],price:r[2],qty:r[3],note:r[4]}));
-    try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        if (Array.isArray(saved) && saved.length) {
-            rows = saved.map((r, i) => ({...rows[i], ...r}));
-        }
-    } catch (_) {}
+    let priceOverrides = {};
+    try { priceOverrides = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch (_) {}
 
     const overlay = document.getElementById('assembly-overlay');
     const laborBody = document.getElementById('assembly-labor-body');
@@ -5066,22 +5025,66 @@
         const lang = document.documentElement.lang;
         return lang === 'ru' ? (assemblyRu[text] || text) : lang === 'uk' ? (assemblyUk[text] || text) : text;
     }
-    function syncPackCounts() {
-        const s = n(document.getElementById('s-count')?.value) || n(sInput.value);
-        const p = n(document.getElementById('p-count')?.value) || n(pInput.value);
-        sInput.value = s;
-        pInput.value = p;
-        totalInput.value = s * p;
-        const holders = rows.find(r => r.name === 'Cell holders');
-        const contacts = rows.find(r => r.name === 'Spot welding, one contact');
-        const rings = rows.find(r => r.name === 'Positive insulation rings, pcs');
-        const cells = rows.find(r => r.name === '18650 cells / installed from pack');
-        if (holders) holders.qty = s * p;
-        if (contacts) contacts.qty = s * p;
-        if (rings) rings.qty = s * p;
-        if (cells) cells.qty = s * p;
-        renderRows();
+
+    let rows = [];
+
+    function getPackData() {
+        const s = Math.max(1, Math.round(n(document.getElementById('s-count')?.value)));
+        const p = Math.max(1, Math.round(n(document.getElementById('p-count')?.value)));
+        const diameter = n(document.getElementById('c-diam')?.value);
+        const format = diameter >= 20 ? '21700' : '18650';
+        const cellCapacity = n(document.getElementById('c-mah')?.value);
+        const cellCurrent = n(document.getElementById('c-amp')?.value);
+        const maxCellVoltage = n(document.getElementById('c-max-v')?.value);
+        const batteryCurrent = p * cellCurrent;
+        let connector;
+        if (batteryCurrent <= 30) connector = 'XT30';
+        else if (batteryCurrent <= 40) connector = 'XT60';
+        else if (batteryCurrent <= 80) connector = 'XT90';
+        else connector = 'Anderson / industrial connector';
+
+        return {s,p,total:s*p,diameter,format,cellCapacity,cellCurrent,cellMaxVoltage:maxCellVoltage,batteryCurrent,connector};
     }
+
+    function defaultsFor(data) {
+        const s = data.s, p = data.p, total = data.total;
+        const bmsBase = s <= 4 ? 250 : s <= 10 ? 420 : s <= 12 ? 650 : s <= 20 ? 950 : 1450;
+        const bmsLabor = s <= 10 ? 400 : s <= 12 ? 500 : s <= 20 ? 650 : 900;
+        const weldingContacts = total * 2;
+        const connectorName = data.connector === 'XT30' ? 'XT30 connector' :
+            data.connector === 'XT60' ? 'XT60 connector' :
+            data.connector === 'XT90' ? 'XT90 connector' : 'Power connector';
+        const connectorPrice = data.connector === 'XT30' ? 30 : data.connector === 'XT60' ? 35 : data.connector === 'XT90' ? 70 : 180;
+        const cellPrice = data.format === '21700' ? 224 : 130;
+
+        return [
+            ['labor','Cell test (IR/capacity)',20,total,'Warranty and sorting by resistance/capacity'],
+            ['labor','Positive terminal isolation rings',8,total,'Protection against short circuit'],
+            ['labor','Spot welding, one contact',4,weldingContacts,'Nickel strip welding points'],
+            ['labor','Glue / reinforced tape assembly',7,1,'Assembly time depends on pack layout'],
+            ['labor', s <= 10 ? 'BMS installation and soldering, up to 10S' : s <= 20 ? 'BMS installation and soldering, 13S-20S' : 'BMS installation and soldering, above 20S',bmsLabor,1,`${s}S / up to ${data.batteryCurrent} A`],
+            ['labor','Power connector soldering',Math.round(connectorPrice > 100 ? 220 : 100),1,data.connector],
+            ['labor','Temperature sensor / active balancer installation',150,1,'Extra protection and balancing'],
+            ['labor','Insulation and enclosure work',220,1,'Kapton, fiberglass and structural insulation'],
+            ['labor','Heat-shrink tubing installation',150,1,'Final enclosure finish'],
+            ['labor','Joint sealing / moisture protection',250,1,'For transport battery packs'],
+
+            ['material',data.format === '21700' ? '21700 cells / installed from pack' : '18650 cells / installed from pack',cellPrice,total,`${data.format}, ${data.cellCapacity} mAh, ${data.cellMaxVoltage} V max`],
+            ['material','Cell holders',8,total,`${data.format} holder arrangement`],
+            ['material','Nickel strip roll',170,1,'0.15 x 8 mm nickel strip'],
+            ['material','BMS board',bmsBase,1,`${s}S, ${data.batteryCurrent} A rated battery current`],
+            ['material',connectorName,connectorPrice,1,data.connector],
+            ['material','AWG 12 silicone wire, m',85,Math.max(1,Math.ceil(data.batteryCurrent > 80 ? 3 : data.batteryCurrent > 40 ? 2 : 1)),'Power wires'],
+            ['material','Balance wire, m',55,s + 1,'BMS balance harness'],
+            ['material','Insulating cardboard, sheet',40,2,'Electrical isolation'],
+            ['material','Fiberglass board, sheet',140,2,'Pack support and protection'],
+            ['material','Heat-shrink tubing, m',150,1,'Outer insulation'],
+            ['material','Kapton tape, roll',100,1,'Thermal and electrical insulation'],
+            ['material','Reinforced tape, roll',150,1,'Rigid pack fixation'],
+            ['material','Solder and flux',150,1,'Wire and BMS soldering'],
+        ];
+    }
+
     function renderRows() {
         laborBody.replaceChildren();
         materialBody.replaceChildren();
@@ -5116,7 +5119,6 @@
                 document.getElementById('assembly-labor-total').textContent = formatUAH(laborTotal);
                 document.getElementById('assembly-material-total').textContent = formatUAH(materialTotal);
                 document.getElementById('assembly-grand-total').textContent = formatUAH(laborTotal + materialTotal);
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
             }
             priceInput.addEventListener('input', recalc);
             qtyInput.addEventListener('input', recalc);
@@ -5125,34 +5127,48 @@
         });
     }
 
+    function rebuildFromPack() {
+        const data = getPackData();
+        sInput.value = data.s;
+        pInput.value = data.p;
+        totalInput.value = data.total;
+
+        rows = defaultsFor(data).map((r,index) => {
+            const id = `row-${index}-${r[1]}`;
+            const override = priceOverrides[id];
+            return {id,type:r[0],name:r[1],price:override !== undefined ? n(override) : r[2],qty:r[3],note:r[4]};
+        });
+
+        const lang = document.documentElement.lang;
+        const factors = document.getElementById('assembly-factors');
+        factors.textContent = lang === 'uk'
+            ? `Конфігурація: ${data.format}; ${data.s}S${data.p}P; елементів: ${data.total}; розрахунковий струм: ${data.batteryCurrent} A; роз'єм: ${data.connector}; BMS: ${data.s}S`
+            : lang === 'ru'
+            ? `Конфигурация: ${data.format}; ${data.s}S${data.p}P; ячеек: ${data.total}; расчётный ток: ${data.batteryCurrent} A; разъём: ${data.connector}; BMS: ${data.s}S`
+            : `Configuration: ${data.format}; ${data.s}S${data.p}P; cells: ${data.total}; estimated current: ${data.batteryCurrent} A; connector: ${data.connector}; BMS: ${data.s}S`;
+        renderRows();
+    }
+
     document.getElementById('btn-assembly-cost').addEventListener('click', () => {
-        syncPackCounts();
+        rebuildFromPack();
         overlay.style.display = 'flex';
     });
     document.getElementById('assembly-close').addEventListener('click', () => overlay.style.display = 'none');
     overlay.addEventListener('click', e => { if (e.target === overlay) overlay.style.display = 'none'; });
-    [sInput,pInput].forEach(el => el.addEventListener('input', () => {
-        const count = n(sInput.value) * n(pInput.value);
-        totalInput.value = count;
-        rows.forEach(r => {
-            if (['Cell holders','Spot welding, one contact','Positive insulation rings, pcs','18650 cells / installed from pack'].includes(r.name)) r.qty = count;
-        });
-        renderRows();
-    }));
     document.getElementById('assembly-reset').addEventListener('click', () => {
         localStorage.removeItem(STORAGE_KEY);
-        rows = laborDefaults.concat(materialDefaults).map((r,i) => ({id:i,type:r[0],name:r[1],price:r[2],qty:r[3],note:r[4]}));
-        syncPackCounts();
+        priceOverrides = {};
+        rebuildFromPack();
     });
     document.getElementById('assembly-save').addEventListener('click', () => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+        rows.forEach(row => { priceOverrides[row.id] = row.price; });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(priceOverrides));
         const lang = document.documentElement.lang;
         const text = lang === 'uk' ? 'Розрахунок збережено' : lang === 'ru' ? 'Расчёт сохранён' : 'Calculation saved';
         const btn = document.getElementById('assembly-save');
         btn.textContent = text;
         setTimeout(() => { btn.textContent = lang === 'uk' ? 'Зберегти розрахунок' : lang === 'ru' ? 'Сохранить расчёт' : 'Save calculation'; }, 1800);
     });
-    syncPackCounts();
 })();
 </script>
 <script>
