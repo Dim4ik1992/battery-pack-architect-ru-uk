@@ -6,7 +6,9 @@
 
 **Battery Pack Architect** is a free, open-source, browser-based tool for designing, visualizing, and **simulating** custom battery packs in 3D.
 
-**[🚀 Launch Live Tool](https://lmf5000.github.io/battery-pack-architect/)**
+**[🚀 Launch Live Tool](https://dim4ik1992.github.io/battery-pack-architect-ru-uk/)**
+
+This copy adds a language selector for English, Russian, and Ukrainian. The selected language is saved in the browser.
 
 ---
 

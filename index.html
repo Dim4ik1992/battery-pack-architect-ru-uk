@@ -8,15 +8,15 @@
     <meta name="description" content="Free 3D Battery Pack Simulator and Designer. Estimate voltage sag, heat, runtime, and efficiency for 18650/21700 packs. Export a visual-reference STL model.">
     <meta name="keywords" content="battery pack designer, 18650 calculator, 21700 designer, battery visualization, DIY battery pack, battery series parallel, battery pack architect">
     <meta name="author" content="Luke Formosa">
-    <link rel="canonical" href="https://lmf5000.github.io/battery-pack-architect/">
+    <link rel="canonical" href="https://dim4ik1992.github.io/battery-pack-architect-ru-uk/">
 
     <meta name="google-site-verification" content="b0jXxeymRk3QwID_-c3mRkYiOUdeD-RAZqVG166e6Kk" />
 
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://lmf5000.github.io/battery-pack-architect/">
+    <meta property="og:url" content="https://dim4ik1992.github.io/battery-pack-architect-ru-uk/">
     <meta property="og:title" content="Battery Pack Architect - 3D Design & Configurator">
     <meta property="og:description" content="Design and visualize custom battery packs with real-time electrical and physical stat updates.">
-    <meta property="og:image" content="https://lmf5000.github.io/battery-pack-architect/preview.jpg"> 
+    <meta property="og:image" content="https://dim4ik1992.github.io/battery-pack-architect-ru-uk/Preview.jpg"> 
     
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:title" content="Battery Pack Architect">
@@ -767,6 +767,12 @@
 			</h1>
 			
 			<div class="header-actions">
+				<select id="language-selector" aria-label="Language" title="Language"
+					style="height:24px; max-width:58px; border:1px solid #cbd5e1; border-radius:4px; background:#fff; color:#475569; font-size:0.68rem; font-weight:700; cursor:pointer;">
+					<option value="en">EN</option>
+					<option value="ru">RU</option>
+					<option value="uk">UA</option>
+				</select>
 				<div class="dropdown">
 					<button id="btn-file-menu" class="btn-hamburger">☰</button>
 					<div id="file-menu" class="dropdown-content">
@@ -4667,6 +4673,217 @@
     clearTimeout(window.__bpaStartupTimer);
     const startupError = document.getElementById('fatal-error');
     if (startupError) startupError.style.display = 'none';
+</script>
+<script>
+(function () {
+    const translations = {
+        ru: {
+            "Reset":"Сброс","Import Settings":"Импорт настроек","Export Settings":"Экспорт настроек",
+            "Export 3D Model (STL)":"Экспорт 3D-модели (STL)","Send Feedback":"Отправить отзыв",
+            "Commercial Enquiries":"Коммерческие запросы","Request Manufacturing Quote":"Запросить цену производства",
+            "View License (GPLv3)":"Лицензия (GPLv3)","Safety & Legal":"Безопасность и право",
+            "Donate":"Пожертвовать","Configuration Name":"Название конфигурации","My Custom Pack":"Мой аккумулятор",
+            "e.g. Long Range V1":"Напр.: дальний запас V1","1. Cell Specifications":"1. Характеристики ячейки",
+            "Search Cell Database (100+ Models)":"Поиск в базе ячеек (100+ моделей)",
+            "⚠️ Data Warning":"⚠️ Предупреждение о данных",
+            "Database values are static snapshots and may be outdated.":"Значения базы являются снимками и могут устареть.",
+            "Always verify Capacity, Price, and especially Amps with official datasheets/vendors.":"Всегда проверяйте ёмкость, цену и особенно ток по официальным документации/поставщикам.",
+            "Or Use Generic Preset":"Или выбрать стандартный профиль","Custom Cell":"Своя ячейка",
+            "Save":"Сохранить","Delete":"Удалить","Diameter (mm)":"Диаметр (мм)","Length (mm)":"Длина (мм)",
+            "Weight (g)":"Вес (г)","Capacity (mAh)":"Ёмкость (мАч)","Cell IR (mΩ)":"Внутр. сопр. ячейки (мΩ)",
+            "Cell Cost":"Стоимость ячейки","Max Discharge (A)":"Макс. разряд (А)","Max Charge (A)":"Макс. заряд (А)",
+            "2. Chemistry & Voltage":"2. Химия и напряжение","Chemistry":"Химия","Custom Voltage":"Произвольное напряжение",
+            "Min (V)":"Мин. (В)","Nom (V)":"Номин. (В)","Max (V)":"Макс. (В)",
+            "3. Pack Configuration":"3. Конфигурация батареи","Total Series":"Последовательных",
+            "Parallel (P)":"Параллельных (P)","Spacing (mm)":"Зазор (мм)","Gap":"Зазор",
+            "Distance between cells.":"Расстояние между ячейками.",
+            "This thickness is also applied to outer edges, increasing total dimensions.":"Этот зазор также применяется к внешним краям, увеличивая общий размер.",
+            "Layers":"Слои","Layer Spacing (mm)":"Зазор между слоями (мм)","Exploded View":"Разнесённый вид",
+            "Total series count is divided across this many layers.":"Общее количество последовательных ячеек делится между указанным числом слоёв.",
+            "⚠️ Experimental":"⚠️ Экспериментально",
+            "Multi-layer busbar logic is complex. The visualization will output incorrect strip positions for certain configurations.":"Логика межслойных шин сложна. Для некоторых конфигураций визуализация может показать неверное положение полосок.",
+            "Always verify connections manually.":"Всегда проверяйте соединения вручную.",
+            "Busbar Visualization":"Отображение шин","None":"Нет","Strips Only":"Только полоски",
+            "Strips + B-Numbers":"Полоски + номера B","Strips + Numbers + Voltages":"Полоски + номера + напряжения",
+            "Hexagonal Nesting":"Шестиугольная укладка","Ladder / Wide Strip":"Лестница / широкая полоска",
+            "Roll Length Calculation":"Расчёт длины катушки",
+            "Assumes one wide sheet of nickel connects the parallel group, dividing the required linear roll length by P.":"Предполагается одна широкая полоска никеля для параллельной группы; линейная длина делится на P.",
+            "4. Simulation & Efficiency":"4. Моделирование и эффективность",
+            "⚙️ Click for Advanced Strip Parameters":"⚙️ Параметры полосок",
+            "Strip Material":"Материал полоски","Nickel":"Никель","Steel":"Сталь","Copper":"Медь",
+            "Width (mm)":"Ширина (мм)","Thick (mm)":"Толщина (мм)","Current SoC (Starting Point)":"Начальный заряд (SoC)",
+            "Load":"Нагрузка","Amps":"Амперы","Watts":"Ватты","Mode:":"Режим:","Disch":"Разряд","Chg":"Заряд",
+            "Sag":"Просадка","Voltage Sag (Ohmic)":"Падение напряжения (омическое)",
+            "Immediate voltage drop due to internal resistance (DCIR) and busbar resistance.":"Мгновенное падение напряжения из-за внутреннего сопротивления (DCIR) и сопротивления шин.",
+            "Net Output":"Выходное напряжение","LVC (Cell)":"НПП ячейки","LVC (Pack)":"НПП батареи",
+            "Low Voltage Cutoff":"Нижний порог напряжения","The safe minimum voltage limit. Simulation stops if the cell dips below this.":"Безопасный минимальный предел. Моделирование остановится ниже этого уровня.",
+            "Usable Cap":"Используемая ёмкость","Runtime":"Время работы",
+            "Estimated time until battery hits LVC or 0% SoC.":"Расчётное время до достижения НПП или 0% заряда.",
+            "Current":"Ток","Total Pwr":"Полная мощн.","Useful Pwr":"Полезная мощн.","Heat (cells)":"Нагрев ячеек",
+            "Heat (strips)":"Нагрев полосок","Total Waste":"Всего потерь","Efficiency":"Эффективность",
+            "First-order estimate:":"Расчёт первого приближения:",
+            "resistance, heat, efficiency and runtime are comparative calculations—not a thermal model, BMS design, fuse calculation, certification result, or substitute for verified datasheets and engineering review.":"сопротивление, нагрев, эффективность и время работы являются сравнительными расчётами, а не тепловой моделью, проектом BMS, расчётом предохранителя, сертификатом или заменой проверенных документаций и инженерного анализа.",
+            "Visual Settings":"Настройки отображения","Element":"Элемент","Color":"Цвет","Metallic":"Металл.",
+            "Cell":"Ячейка","Cap":"Крышка","Busbar":"Шина","Inter-Layer":"Между слоями","Spacer":"Разделитель","Background":"Фон",
+            "About Battery Pack Architect":"О Battery Pack Architect",
+            "Battery Pack Architect is a free, open-source 3D tool for designing custom lithium battery packs.":"Battery Pack Architect — бесплатный инструмент с открытым кодом для проектирования литиевых батарей в 3D.",
+            "Visualize Series/Parallel configurations (18650, 21700, LFP, Na-ion) in real-time.":"В реальном времени визуализируйте последовательные и параллельные схемы (18650, 21700, LFP, Na-ion).",
+            "3D Visualization:":"3D-визуализация:","Auto-generates spot-welding strips & hex layouts.":"Автоматически создаёт полоски для точечной сварки и шестиугольную укладку.",
+            "Electrical Estimate:":"Расчёт параметров:","First-order voltage sag, Joule heating, and efficiency calculations.":"Приблизительный просадка напряжения, нагрев Джоуля и эффективность.",
+            "Dynamic Runtime:":"Динамическое время работы:","Numerically estimates runtime across changing SoC for constant-power or constant-current loads.":"Численно оценивает время работы при изменяющемся SoC для постоянной мощности или токовой нагрузки.",
+            "Chemistry Aware:":"Учитывает химию:","Approximate, chemistry-specific open-circuit-voltage curves for comparison.":"Приблизительные кривые напряжения холостого хода для сравнения типов химии.",
+            "Licensed under GPL v3":"Лицензия GPL v3","+ Add to Compare":"+ Добавить к сравнению","Compare All":"Сравнить все",
+            "🏭 Get a Manufacturing Quote":"🏭 Получить цену производства","Electrical":"Электрика","Physical":"Габариты",
+            "Config":"Конфигурация","Strip Length":"Длина полоски","Label Rating":"Номинал на этикетке","V Range":"Диапазон В",
+            "Max Output":"Макс. выход","Total Energy":"Общая энергия","Length":"Длина","Width":"Ширина","Height":"Высота",
+            "Volume":"Объём","Weight":"Вес","Cell Cost":"Стоимость ячеек","Designed by Luke Formosa":"Разработка: Luke Formosa",
+            "Left: Rotate":"Лево: вращение","Right: Pan":"Право: перемещение","Scroll: Zoom":"Колесо: масштаб",
+            "High Performance Mode Active":"Активен режим высокой производительности","(Labels hidden to save FPS)":"(Подписи скрыты для FPS)",
+            "Comparison Matrix":"Матрица сравнения","Parameter":"Параметр","Loading…":"Загрузка…",
+            "IMPORTANT SAFETY & LEGAL DISCLAIMER":"ВАЖНОЕ ПРЕДУПРЕЖДЕНИЕ ПО БЕЗОПАСНОСТИ И ПРАВУ",
+            "I Understand and Agree":"Я понимаю и принимаю","Language":"Язык"
+        },
+        uk: {
+            "Reset":"Скинути","Import Settings":"Імпорт налаштувань","Export Settings":"Експорт налаштувань",
+            "Export 3D Model (STL)":"Експорт 3D-моделі (STL)","Send Feedback":"Надіслати відгук",
+            "Commercial Enquiries":"Комерційні запити","Request Manufacturing Quote":"Запросити ціну виробництва",
+            "View License (GPLv3)":"Ліцензія (GPLv3)","Safety & Legal":"Безпека та право",
+            "Donate":"Пожертвувати","Configuration Name":"Назва конфігурації","My Custom Pack":"Мій акумуляторний блок",
+            "e.g. Long Range V1":"Напр.: дальній запас V1","1. Cell Specifications":"1. Характеристики елемента",
+            "Search Cell Database (100+ Models)":"Пошук у базі елементів (100+ моделей)",
+            "⚠️ Data Warning":"⚠️ Попередження про дані",
+            "Database values are static snapshots and may be outdated.":"Значення бази є статичними знімками й можуть бути застарілі.",
+            "Always verify Capacity, Price, and especially Amps with official datasheets/vendors.":"Завжди перевіряйте ємність, ціну й особливо струм за офіційними документами/продавцем.",
+            "Or Use Generic Preset":"Або вибрати стандартний профіль","Custom Cell":"Власний елемент",
+            "Save":"Зберегти","Delete":"Видалити","Diameter (mm)":"Діаметр (мм)","Length (mm)":"Довжина (мм)",
+            "Weight (g)":"Вага (г)","Capacity (mAh)":"Ємність (мАч)","Cell IR (mΩ)":"Внутр. опір елемента (мΩ)",
+            "Cell Cost":"Вартість елемента","Max Discharge (A)":"Макс. розряд (А)","Max Charge (A)":"Макс. заряд (А)",
+            "2. Chemistry & Voltage":"2. Хімія та напруга","Chemistry":"Хімія","Custom Voltage":"Довільна напруга",
+            "Min (V)":"Мін. (В)","Nom (V)":"Номін. (В)","Max (V)":"Макс. (В)",
+            "3. Pack Configuration":"3. Конфігурація батареї","Total Series":"Послідовних",
+            "Parallel (P)":"Паралельних (P)","Spacing (mm)":"Зазор (мм)","Gap":"Зазор",
+            "Distance between cells.":"Відстань між елементами.",
+            "This thickness is also applied to outer edges, increasing total dimensions.":"Цей зазор також застосовується до зовнішніх країв, збільшуючи загальний розмір.",
+            "Layers":"Шари","Layer Spacing (mm)":"Зазор між шарами (мм)","Exploded View":"Рознесений вигляд",
+            "Total series count is divided across this many layers.":"Загальна кількість послідовних елементів ділиться між указаною кількістю шарів.",
+            "⚠️ Experimental":"⚠️ Експериментально",
+            "Multi-layer busbar logic is complex. The visualization will output incorrect strip positions for certain configurations.":"Логіка міжшарових шин складна. Для деяких конфігурацій візуалізація може показати неправильне положення смужок.",
+            "Always verify connections manually.":"Завжди перевіряйте з'єднання вручну.",
+            "Busbar Visualization":"Відображення шин","None":"Немає","Strips Only":"Лише смужки",
+            "Strips + B-Numbers":"Смужки + номери B","Strips + Numbers + Voltages":"Смужки + номери + напруга",
+            "Hexagonal Nesting":"Шестикутне розміщення","Ladder / Wide Strip":"Драбина / широка смужка",
+            "Roll Length Calculation":"Розрахунок довжини котушки",
+            "Assumes one wide sheet of nickel connects the parallel group, dividing the required linear roll length by P.":"Передбачається одна широка смужка нікелю для паралельної групи; лінійна довжина ділиться на P.",
+            "4. Simulation & Efficiency":"4. Моделювання та ефективність",
+            "⚙️ Click for Advanced Strip Parameters":"⚙️ Параметри смужок",
+            "Strip Material":"Матеріал смужки","Nickel":"Нікель","Steel":"Сталь","Copper":"Мідь",
+            "Width (mm)":"Ширина (мм)","Thick (mm)":"Товщина (мм)","Current SoC (Starting Point)":"Початковий заряд (SoC)",
+            "Load":"Навантаження","Amps":"Ампери","Watts":"Вати","Mode:":"Режим:","Disch":"Розряд","Chg":"Заряд",
+            "Sag":"Просадка","Voltage Sag (Ohmic)":"Спад напруги (омічний)",
+            "Immediate voltage drop due to internal resistance (DCIR) and busbar resistance.":"Миттєвий спад напруги через внутрішній опір (DCIR) і опір шин.",
+            "Net Output":"Вихідна напруга","LVC (Cell)":"НПН елемента","LVC (Pack)":"НПН батареї",
+            "Low Voltage Cutoff":"Нижній поріг напруги","The safe minimum voltage limit. Simulation stops if the cell dips below this.":"Безпечна мінімальна межа. Моделювання зупиниться нижче цього рівня.",
+            "Usable Cap":"Використана ємність","Runtime":"Час роботи",
+            "Estimated time until battery hits LVC or 0% SoC.":"Розрахунковий час до НПН або 0% заряду.",
+            "Current":"Струм","Total Pwr":"Повна потужн.","Useful Pwr":"Корисна потужн.","Heat (cells)":"Нагрів елементів",
+            "Heat (strips)":"Нагрів смужок","Total Waste":"Усього втрат","Efficiency":"Ефективність",
+            "First-order estimate:":"Розрахунок першого наближення:",
+            "resistance, heat, efficiency and runtime are comparative calculations—not a thermal model, BMS design, fuse calculation, certification result, or substitute for verified datasheets and engineering review.":"опір, нагрів, ефективність і час роботи є порівняльними розрахунками, а не тепловою моделлю, проєктом BMS, розрахунком запобіжника, сертифікацією або заміною перевірених документів та інженерного огляду.",
+            "Visual Settings":"Налаштування вигляду","Element":"Елемент","Color":"Колір","Metallic":"Метал.",
+            "Cell":"Елемент","Cap":"Кришка","Busbar":"Шина","Inter-Layer":"Між шарами","Spacer":"Роздільник","Background":"Фон",
+            "About Battery Pack Architect":"Про Battery Pack Architect",
+            "Battery Pack Architect is a free, open-source 3D tool for designing custom lithium battery packs.":"Battery Pack Architect — безкоштовний інструмент із відкритим кодом для проєктування літієвих батарей у 3D.",
+            "Visualize Series/Parallel configurations (18650, 21700, LFP, Na-ion) in real-time.":"У реальному часі візуалізуйте послідовні та паралельні схеми (18650, 21700, LFP, Na-ion).",
+            "3D Visualization:":"3D-візуалізація:","Auto-generates spot-welding strips & hex layouts.":"Автоматично створює смужки для точкового зварювання та шестикутне розміщення.",
+            "Electrical Estimate:":"Розрахунок параметрів:","First-order voltage sag, Joule heating, and efficiency calculations.":"Приблизний спад напруги, нагрів Джоуля та ефективність.",
+            "Dynamic Runtime:":"Динамічний час роботи:","Numerically estimates runtime across changing SoC for constant-power or constant-current loads.":"Чисельно оцінює час роботи при змінному SoC для навантаження сталої потужності або сталого струму.",
+            "Chemistry Aware:":"Ураховує хімію:","Approximate, chemistry-specific open-circuit-voltage curves for comparison.":"Наближені криві напруги холостого ходу для порівняння типів хімії.",
+            "Licensed under GPL v3":"Ліцензія GPL v3","+ Add to Compare":"+ Додати до порівняння","Compare All":"Порівняти всі",
+            "🏭 Get a Manufacturing Quote":"🏭 Отримати ціну виробництва","Electrical":"Електрика","Physical":"Габарити",
+            "Config":"Конфігурація","Strip Length":"Довжина смужки","Label Rating":"Номінал на етикетці","V Range":"Діапазон В",
+            "Max Output":"Макс. вихід","Total Energy":"Загальна енергія","Length":"Довжина","Width":"Ширина","Height":"Висота",
+            "Volume":"Об'єм","Weight":"Вага","Cell Cost":"Вартість елементів","Designed by Luke Formosa":"Розробка: Luke Formosa",
+            "Left: Rotate":"Ліво: обертання","Right: Pan":"Право: переміщення","Scroll: Zoom":"Колесо: масштаб",
+            "High Performance Mode Active":"Активний режим високої продуктивності","(Labels hidden to save FPS)":"(Підписи приховано для FPS)",
+            "Comparison Matrix":"Матриця порівняння","Parameter":"Параметр","Loading…":"Завантаження…",
+            "IMPORTANT SAFETY & LEGAL DISCLAIMER":"ВАЖЛИВЕ ПОПЕРЕДЖЕННЯ ПРО БЕЗПЕКУ ТА ПРАВО",
+            "I Understand and Agree":"Я розумію та погоджуюся","Language":"Мова"
+        }
+    };
+
+    const selector = document.getElementById("language-selector");
+    const titleMeta = document.querySelector('meta[name="description"]');
+    const titleRu = "Архитектор аккумуляторного блока | 3D-конструктор и калькулятор";
+    const titleUk = "Конструктор акумуляторного блоку | 3D-проєктування і калькулятор";
+    const originalTitle = document.title;
+    let observer;
+
+    function translateNode(node, lang) {
+        if (!node) return;
+        if (!node.__bpaOriginal) node.__bpaOriginal = node.textContent;
+        const original = node.__bpaOriginal;
+        if (lang === "en") {
+            node.textContent = original;
+            return;
+        }
+        let translated = translations[lang][original] || original;
+        if (!translations[lang][original]) {
+            translated = translated
+                .replace(/(\d+(?:\.\d+)?)% of max current/g, lang === "ru" ? "$1% от максимального токa" : "$1% від максимального струму")
+                .replace(/(\d+(?:\.\d+)?) C/g, "$1 C")
+                .replace(/No partner manufacturer in this region yet/g, lang === "ru" ? "В этом регионе пока нет партнёра-производителя" : "У цьому регіоні ще немає партнера-виробника");
+        }
+        node.textContent = translated;
+    }
+
+    function applyLanguage(lang) {
+        lang = lang || "en";
+        localStorage.setItem("bpa_language", lang);
+        document.documentElement.lang = lang;
+        if (lang === "ru") document.title = titleRu;
+        else if (lang === "uk") document.title = titleUk;
+        else document.title = originalTitle;
+
+        if (titleMeta && lang === "ru") titleMeta.content = "Бесплатный 3D-конструктор аккумуляторных батарей: расчёт напряжения, нагрева, времени работы и экспорта STL.";
+        if (titleMeta && lang === "uk") titleMeta.content = "Безкоштовний 3D-конструктор акумуляторних батарей: розрахунок напруги, нагріву, часу роботи та експорту STL.";
+        if (titleMeta && lang === "en") titleMeta.content = "Free 3D Battery Pack Simulator and Designer. Estimate voltage sag, heat, runtime, and efficiency for 18650/21700 packs. Export a visual-reference STL model.";
+
+        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+        const nodes = [];
+        while (walker.nextNode()) nodes.push(walker.currentNode);
+        nodes.forEach(node => {
+            if (node.parentElement && (node.parentElement.closest("script") || node.parentElement.closest("style"))) return;
+            const text = node.textContent && node.textContent.trim();
+            if (text) translateNode(node, lang);
+        });
+
+        document.querySelectorAll("input[placeholder]").forEach(el => {
+            if (!el.__bpaPlaceholder) el.__bpaPlaceholder = el.placeholder;
+            const map = lang === "ru"
+                ? {"Type to search (e.g. '26J', 'Molicel', '5000mAh')...":"Введите запрос (например: «26J», «Molicel», «5000mAh»)...","e.g. Long Range V1":"Напр.: дальний запас V1"}
+                : lang === "uk"
+                ? {"Type to search (e.g. '26J', 'Molicel', '5000mAh')...":"Введіть запит (наприклад: «26J», «Molicel», «5000mAh»)...","e.g. Long Range V1":"Напр.: дальній запас V1"}
+                : {};
+            el.placeholder = map[el.__bpaPlaceholder] || el.__bpaPlaceholder;
+        });
+        document.querySelectorAll("option").forEach(el => {
+            if (!el.__bpaOriginalOption) el.__bpaOriginalOption = el.textContent;
+            el.textContent = lang === "en" ? el.__bpaOriginalOption : (translations[lang][el.__bpaOriginalOption] || el.__bpaOriginalOption);
+        });
+        selector.value = lang;
+    }
+
+    selector.addEventListener("change", () => applyLanguage(selector.value));
+    const saved = localStorage.getItem("bpa_language");
+    applyLanguage(saved && translations[saved] ? saved : "en");
+
+    observer = new MutationObserver(() => {
+        observer.disconnect();
+        applyLanguage(selector.value);
+        observer.observe(document.body, {childList:true, characterData:true, subtree:true});
+    });
+    observer.observe(document.body, {childList:true, characterData:true, subtree:true});
+})();
 </script>
 </body>
 </html>
